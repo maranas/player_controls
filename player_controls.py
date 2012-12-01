@@ -80,11 +80,12 @@ def get_playlist_tracks(playlist):
             try:
                 track = ret[0].descriptorAtIndex_(x).stringValue()
                 artist = run_script('tell application "iTunes" to get artist of track "' + track + '"')[0].stringValue()
+                album = run_script('tell application "iTunes" to get album of track "' + track + '"')[0].stringValue()
                 length = run_script('tell application "iTunes" to get time of track "' + track + '"')[0].stringValue()
             except:
                 pass
             if track:
-                tracks.append([artist, track, length])
+                tracks.append([artist, track, album, length])
             x += 1
         return tracks
     else:
@@ -93,12 +94,14 @@ def get_playlist_tracks(playlist):
 def get_current_track():
     track = None
     artist = None
+    album = None
     try:
         track = run_script('tell application "iTunes" to get name of current track')[0].stringValue()
         artist = run_script('tell application "iTunes" to get artist of current track')[0].stringValue()
+        album = run_script('tell application "iTunes" to get album of current track')[0].stringValue()
     except:
         pass
-    return [artist, track]
+    return [artist, track, album]
 
 def get_player_position():
     t = run_script('tell application "iTunes" to get time of current track')[0].stringValue()
@@ -108,6 +111,28 @@ def get_player_position():
     pos = run_script('tell application "iTunes" to get player position')[0].int32Value()
     return (pos*100)/((m * 60) + s)
 
+def set_player_position(p):
+    t = run_script('tell application "iTunes" to get time of current track')[0].stringValue()
+    m, s = t.split(':')
+    m = int(m)
+    s = int(s)
+    pos = (p*((m * 60) + s))/100
+    run_script('tell application "iTunes" to set player position to %d' % pos)[0].int32Value()
+
+def is_playing():
+     cmd = 'tell application "iTunes" to get player state'
+     return run_script(cmd)[0].stringValue() == 'kPSP'
+
+# Volume controls
+def set_volume_percent(p=50):
+    cmd = 'tell application "iTunes" to set the sound volume to %d' % p
+    run_script(cmd)
+
+def get_volume_percent():
+    cmd = 'tell application "iTunes" to get the sound volume'
+    return run_script(cmd)[0].int32Value()
+
+# TODO: Equalizer controls
 
 """
 player_controls.py
